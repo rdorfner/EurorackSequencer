@@ -142,3 +142,104 @@ class NeopixelDisplay:
         index = self._gate_index(gate_num)
         color = self.np[index]
         return 0 if color == RED else 1
+    
+    def draw_line(self, x1, y1, x2, y2, color):
+        """
+        Draw a line from (x1,y1) to (x2,y2) using Bresenham's algorithm
+        
+        Args:
+            x1, y1: Start coordinates
+            x2, y2: End coordinates
+            color: RGB tuple (r, g, b)
+        """
+        dx = abs(x2 - x1)
+        dy = abs(y2 - y1)
+        sx = 1 if x1 < x2 else -1
+        sy = 1 if y1 < y2 else -1
+        err = dx - dy
+        
+        x, y = x1, y1
+        
+        while True:
+            if 0 <= x < DISPLAY_WIDTH and 0 <= y < DISPLAY_HEIGHT:
+                self.set_pixel(x, y, color)
+            
+            if x == x2 and y == y2:
+                break
+                
+            e2 = 2 * err
+            if e2 > -dy:
+                err -= dy
+                x += sx
+            if e2 < dx:
+                err += dx
+                y += sy
+    
+    def draw_rectangle(self, x, y, width, height, color, filled=False):
+        """
+        Draw a rectangle at (x,y) with specified width and height
+        
+        Args:
+            x, y: Top-left corner coordinates
+            width: Rectangle width
+            height: Rectangle height
+            color: RGB tuple (r, g, b)
+            filled: If True, fill the rectangle; if False, draw outline only
+        """
+        if filled:
+            for py in range(y, y + height):
+                for px in range(x, x + width):
+                    if 0 <= px < DISPLAY_WIDTH and 0 <= py < DISPLAY_HEIGHT:
+                        self.set_pixel(px, py, color)
+        else:
+            # Draw outline only
+            self.draw_line(x, y, x + width - 1, y, color)  # Top
+            self.draw_line(x, y, x, y + height - 1, color)  # Left
+            self.draw_line(x + width - 1, y, x + width - 1, y + height - 1, color)  # Right
+            self.draw_line(x, y + height - 1, x + width - 1, y + height - 1, color)  # Bottom
+    
+    def draw_circle(self, center_x, center_y, radius, color, filled=False):
+        """
+        Draw a circle centered at (center_x, center_y) with specified radius
+        
+        Args:
+            center_x, center_y: Circle center coordinates
+            radius: Circle radius
+            color: RGB tuple (r, g, b)
+            filled: If True, fill the circle; if False, draw outline only
+        """
+        if filled:
+            for py in range(center_y - radius, center_y + radius + 1):
+                for px in range(center_x - radius, center_x + radius + 1):
+                    dx = px - center_x
+                    dy = py - center_y
+                    if dx * dx + dy * dy <= radius * radius:
+                        if 0 <= px < DISPLAY_WIDTH and 0 <= py < DISPLAY_HEIGHT:
+                            self.set_pixel(px, py, color)
+        else:
+            # Draw outline using Bresenham's circle algorithm
+            x = 0
+            y = radius
+            d = 3 - 2 * radius
+            
+            def draw_circle_points(cx, cy, x, y, color):
+                points = [
+                    (cx + x, cy + y), (cx - x, cy + y),
+                    (cx + x, cy - y), (cx - x, cy - y),
+                    (cx + y, cy + x), (cx - y, cy + x),
+                    (cx + y, cy - x), (cx - y, cy - x)
+                ]
+                for px, py in points:
+                    if 0 <= px < DISPLAY_WIDTH and 0 <= py < DISPLAY_HEIGHT:
+                        self.set_pixel(px, py, color)
+            
+            draw_circle_points(center_x, center_y, x, y, color)
+            
+            while y >= x:
+                x += 1
+                if d > 0:
+                    y -= 1
+                    d = d + 4 * (x - y) + 10
+                else:
+                    d = d + 4 * x + 6
+                draw_circle_points(center_x, center_y, x, y, color)
