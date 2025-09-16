@@ -1,0 +1,32 @@
+# Sequencer Project Rules
+
+## Hardware Configuration
+- Target device: ESP32-C6 from XIAO
+- Language: MicroPython
+- Display: 6x20 neopixel display on pin d0 (configurable)
+- Display origin: Bottom-left corner (0,0)
+- Display matrix: 20 columns (x-axis), 6 rows (y-axis)
+- Gate pixels: 6 additional pixels (120-125) for gate control
+
+## Development Guidelines
+- Always ask before making changes to code
+- Provide GitHub commit message for each change
+- Make small changes for microcommits
+- Inline comments are acceptable
+- Each file must have a header describing contents and algorithm
+- Use neopixel brightness at 10% by default
+
+## Display Coordinate System
+- Position (0,0) = pixel 0
+- Position (0,1) = pixel 1  
+- Position (1,0) = pixel 6
+- Position (1,1) = pixel 7
+- Position (19,5) = pixel 119
+- Gate pixels: 120-125 (gate1-gate6)
+
+## Color Palette
+Red, Green, Blue, White, Cyan, Magenta, Purple, Grey, Yellow, Orange, Indigo, Violet
+
+## Gate Control
+- Red = gate off (0)
+- Green = gate on (1)
