@@ -19,7 +19,7 @@ import machine
 import time
 
 class RotaryEncoder:
-    def __init__(self, pin_a, pin_b, pin_button, pull_up=True):
+    def __init__(self, pin_a, pin_b, pin_button, pull_up=False):
         """
         Initialize rotary encoder
         
@@ -27,11 +27,12 @@ class RotaryEncoder:
             pin_a: Pin number for encoder A (quadrature signal)
             pin_b: Pin number for encoder B (quadrature signal)
             pin_button: Pin number for push button
-            pull_up: Enable internal pull-up resistors (default: True)
+            pull_up: Enable internal pull-up resistors (default: False for external pull-ups)
         """
         self.pin_a = pin_a
         self.pin_b = pin_b
         self.pin_button = pin_button
+        self.pull_up = pull_up
         
         # Initialize encoder pins
         if pull_up:
@@ -221,6 +222,7 @@ class RotaryEncoder:
             'pin_a': self.pin_a,
             'pin_b': self.pin_b,
             'pin_button': self.pin_button,
+            'pull_up': self.pull_up,
             'debounce_delay': self.button_debounce_delay
         }
     

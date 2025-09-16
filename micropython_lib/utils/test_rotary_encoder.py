@@ -264,6 +264,25 @@ def test_status_monitoring(encoder):
     
     print("\n\nStatus monitoring test completed\n")
 
+def test_pull_up_configuration():
+    """Test pull-up resistor configuration"""
+    print("Testing pull-up resistor configuration...")
+    print("=" * 40)
+    
+    # Test with external pull-ups (default)
+    print("Testing with external pull-up resistors...")
+    encoder_external = RotaryEncoder(pin_a=3, pin_b=4, pin_button=5, pull_up=False)
+    status = encoder_external.get_status()
+    print(f"  Pull-up setting: {status['pull_up']} (External)")
+    
+    # Test with internal pull-ups
+    print("Testing with internal pull-up resistors...")
+    encoder_internal = RotaryEncoder(pin_a=3, pin_b=4, pin_button=5, pull_up=True)
+    status = encoder_internal.get_status()
+    print(f"  Pull-up setting: {status['pull_up']} (Internal)")
+    
+    print("Pull-up configuration test completed\n")
+
 def test_edge_cases(encoder):
     """Test edge cases and error conditions"""
     print("Testing edge cases...")
@@ -297,17 +316,19 @@ def run_comprehensive_test():
     
     # Initialize rotary encoder
     # Note: These pin numbers should be adjusted based on your hardware setup
-    encoder = RotaryEncoder(pin_a=3, pin_b=4, pin_button=5, pull_up=True)
+    # pull_up=False for external pull-up resistors, pull_up=True for internal pull-ups
+    encoder = RotaryEncoder(pin_a=3, pin_b=4, pin_button=5, pull_up=False)
     
     print("Rotary encoder initialized:")
     print(f"  Encoder A pin: {encoder.pin_a}")
     print(f"  Encoder B pin: {encoder.pin_b}")
     print(f"  Button pin: {encoder.pin_button}")
-    print(f"  Pull-up resistors: Enabled")
+    print(f"  Pull-up resistors: {'Internal' if encoder.pull_up else 'External'}")
     print()
     
     try:
         # Run all test functions
+        test_pull_up_configuration()
         test_position_reset(encoder)
         test_basic_rotation(encoder)
         test_button_functionality(encoder)
