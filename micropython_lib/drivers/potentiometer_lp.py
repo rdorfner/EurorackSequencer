@@ -50,8 +50,14 @@ class LowPowerPotentiometer:
         self.last_sent_value = 0.0
         
         # BPM scaling
-        self.min_bpm = 5.0
-        self.max_bpm = 240.0
+        self.min_bpm = 15.0
+        self.max_bpm = 200.0
+        
+        # Potentiometer range compensation (based on observed limits)
+        self.observed_min_raw = 0
+        self.observed_max_raw = 3311
+        self.observed_range = self.observed_max_raw - self.observed_min_raw
+        self.scale_factor = 4095.0 / self.observed_range
         
         # Thread management
         self.sampling_thread = None
@@ -108,7 +114,7 @@ class LowPowerPotentiometer:
     
     def _normalize_value(self, raw_value):
         """
-        Normalize ADC value to 0.0-1.0 range
+        Normalize ADC value to 0.0-1.0 range with compensation for limited potentiometer range
         
         Args:
             raw_value: Raw ADC value
@@ -116,7 +122,10 @@ class LowPowerPotentiometer:
         Returns:
             Normalized value (0.0-1.0)
         """
-        return raw_value / self.max_value
+        # Apply scaling to compensate for limited potentiometer range
+        scaled_value = (raw_value - self.observed_min_raw) * self.scale_factor
+        scaled_value = max(0, min(4095, scaled_value))  # Clamp to valid range
+        return scaled_value / self.max_value
     
     def _calculate_bpm(self, normalized_value):
         """
