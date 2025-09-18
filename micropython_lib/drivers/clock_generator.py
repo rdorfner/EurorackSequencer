@@ -23,26 +23,31 @@ import _thread
 from potentiometer import Potentiometer
 
 class ClockGenerator:
-    def __init__(self, potentiometer, led_pin=2, min_bpm=5, max_bpm=240, pulse_width_ms=50):
+    def __init__(self, potentiometer, led_pin=15, min_bpm=5, max_bpm=240, pulse_width_ms=50, trigger_generator=None):
         """
         Initialize clock generator
         
         Args:
             potentiometer: Potentiometer object for rate control
-            led_pin: Pin number for clock output LED (default: 2 for user LED)
+            led_pin: Pin number for clock output LED (default: 15 for GPIO15)
             min_bpm: Minimum BPM rate (default: 5)
             max_bpm: Maximum BPM rate (default: 240)
             pulse_width_ms: Clock pulse width in milliseconds (default: 50)
+            trigger_generator: TriggerGenerator object for gate events (optional)
         """
         self.potentiometer = potentiometer
         self.led_pin = led_pin
         self.min_bpm = min_bpm
         self.max_bpm = max_bpm
         self.pulse_width_ms = pulse_width_ms
+        self.trigger_generator = trigger_generator
         
         # Initialize LED
         self.led = machine.Pin(led_pin, machine.Pin.OUT)
         self.led.off()
+        
+        # Clock state for LED toggling
+        self.led_state = False
         
         # Clock state
         self.is_running = False
@@ -69,15 +74,19 @@ class ClockGenerator:
         while self.is_running:
             with self.thread_lock:
                 if not self.is_paused:
-                    # Turn on LED (clock pulse)
-                    self.led.on()
-                    time.sleep_ms(self.pulse_width_ms)
+                    # Toggle LED state
+                    self.led_state = not self.led_state
+                    if self.led_state:
+                        self.led.on()
+                    else:
+                        self.led.off()
                     
-                    # Turn off LED
-                    self.led.off()
+                    # Call trigger generator on each clock tick
+                    if self.trigger_generator:
+                        self.trigger_generator.clock_tick()
                     
-                    # Sleep for the remaining period
-                    time.sleep_ms(self.sleep_time_ms)
+                    # Sleep for the full period (LED stays in current state)
+                    time.sleep_ms(self.period_ms)
                 else:
                     # If paused, just sleep briefly
                     time.sleep_ms(10)
@@ -158,6 +167,16 @@ class ClockGenerator:
         """
         return self.current_bpm
     
+    def set_trigger_generator(self, trigger_generator):
+        """
+        Set the trigger generator for this clock
+        
+        Args:
+            trigger_generator: TriggerGenerator object
+        """
+        self.trigger_generator = trigger_generator
+        print("Trigger generator connected to clock")
+    
     def get_status(self):
         """
         Get clock status information
@@ -173,7 +192,9 @@ class ClockGenerator:
             'pulse_width_ms': self.pulse_width_ms,
             'min_bpm': self.min_bpm,
             'max_bpm': self.max_bpm,
-            'led_pin': self.led_pin
+            'led_pin': self.led_pin,
+            'led_state': self.led_state,
+            'has_trigger_generator': self.trigger_generator is not None
         }
     
     def set_pulse_width(self, width_ms):

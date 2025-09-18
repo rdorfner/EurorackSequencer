@@ -21,7 +21,7 @@ import sys
 import os
 
 # Add the drivers directory to the path to import our libraries
-sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'drivers'))
+#sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'drivers'))
 
 from potentiometer import Potentiometer
 from clock_generator import ClockGenerator
@@ -255,11 +255,11 @@ def run_comprehensive_test():
     print("=" * 50)
     
     # Initialize potentiometer and clock generator
-    pot = Potentiometer(pin=2, resolution=12, smoothing_samples=5)
-    clock = ClockGenerator(pot, led_pin=2, min_bpm=5, max_bpm=240, pulse_width_ms=50)
+    pot = Potentiometer(pin=1, resolution=12, smoothing_samples=5)
+    clock = ClockGenerator(pot, led_pin=15, min_bpm=5, max_bpm=240, pulse_width_ms=50)
     
-    print("Potentiometer initialized on pin D2")
-    print("Clock generator initialized with LED on pin 2")
+    print("Potentiometer initialized on pin D1")
+    print("Clock generator initialized with LED on pin GPIO15")
     print("BPM range: 5-240, Pulse width: 50ms")
     print()
     
